@@ -8,6 +8,444 @@ output: html_document
 knitr::opts_knit$set(root.dir = normalizePath("/Users/eklavya/projects/education/formalEducation/DataScience/DataScienceAssignments/FinalProject/fraud_detection/"))  
 ```
 
+
+
+```{python}
+
+import os
+os.chdir("/Users/eklavya/projects/education/formalEducation/DataScience/DataScienceAssignments/FinalProject/fraud_detection/")
+
+
+```
+
+
+# Official Starter Code
+
+```{python}
+#!/usr/bin/env python
+# coding: utf-8
+
+# ## Credit Card Fraud Detection
+# 
+# In this project you will predict fraudulent credit card transactions with the help of Machine learning models. Please import the following libraries to get started.
+
+# In[ ]:
+
+
+import numpy as np
+import pandas as pd
+
+import matplotlib.pyplot as plt
+get_ipython().run_line_magic('matplotlib', 'inline')
+import seaborn as sns
+
+from sklearn import metrics
+from sklearn import preprocessing
+
+
+# ## Exploratory data analysis
+
+# In[ ]:
+
+
+df = pd.read_csv('creditcard.csv')
+df.head()
+
+
+# In[ ]:
+
+
+#observe the different feature type present in the data
+
+
+# Here we will observe the distribution of our classes
+
+# In[ ]:
+
+
+classes=df['Class'].value_counts()
+normal_share=classes[0]/df['Class'].count()*100
+fraud_share=classes[1]/df['Class'].count()*100
+
+
+# In[ ]:
+
+
+# Create a bar plot for the number and percentage of fraudulent vs non-fraudulent transcations
+
+
+# In[ ]:
+
+
+# Create a scatter plot to observe the distribution of classes with time
+
+
+# In[ ]:
+
+
+# Create a scatter plot to observe the distribution of classes with Amount
+
+
+# In[ ]:
+
+
+# Drop unnecessary columns
+
+
+# ### Splitting the data into train & test data
+
+# In[ ]:
+
+
+y= #class variable
+
+
+# In[ ]:
+
+
+from sklearn import model_selection
+
+X_train, X_test, y_train, y_test = 
+
+
+# ##### Preserve X_test & y_test to evaluate on the test data once you build the model
+
+# In[ ]:
+
+
+print(np.sum(y))
+print(np.sum(y_train))
+print(np.sum(y_test))
+
+
+# ### Plotting the distribution of a variable
+
+# In[ ]:
+
+
+# plot the histogram of a variable from the dataset to see the skewness
+
+
+# ### If there is skewness present in the distribution use:
+# - <b>Power Transformer</b> package present in the <b>preprocessing library provided by sklearn</b> to make distribution more gaussian
+
+# In[ ]:
+
+
+# - Apply : preprocessing.PowerTransformer(copy=False) to fit & transform the train & test data
+
+
+# In[ ]:
+
+
+# plot the histogram of a variable from the dataset again to see the result 
+
+
+# ## Model Building
+# - Build different models on the imbalanced dataset and see the result
+
+# In[ ]:
+
+
+# Logistic Regression
+from sklearn import linear_model #import the package
+
+num_C = ______  #--> list of values
+cv_num =   #--> list of values
+
+
+# #### perfom cross validation on the X_train & y_train to create:
+# - X_train_cv
+# - X_test_cv 
+# - y_train_cv
+# - y_test_cv 
+
+# In[ ]:
+
+
+#perform cross validation
+
+#perform hyperparameter tuning
+
+#print the evaluation result by choosing a evaluation metric
+
+#print the optimum value of hyperparameters
+
+
+# ### Similarly explore other algorithms by building models like:
+# - KNN
+# - SVM
+# - Decision Tree
+# - Random Forest
+# - XGBoost
+
+# #### Proceed with the model which shows the best result 
+# - Apply the best hyperparameter on the model
+# - Predict on the test dataset
+
+# In[ ]:
+
+
+clf = ___  #initialise the model with optimum hyperparameters
+clf.fit(X_train, y_train)
+print --> #print the evaluation score on the X_test by choosing the best evaluation metric
+
+
+# ### Print the important features of the best model to understand the dataset
+# - This will not give much explanation on the already transformed dataset
+# - But it will help us in understanding if the dataset is not PCA transformed
+
+# In[ ]:
+
+
+var_imp = []
+for i in clf.feature_importances_:
+    var_imp.append(i)
+print('Top var =', var_imp.index(np.sort(clf.feature_importances_)[-1])+1)
+print('2nd Top var =', var_imp.index(np.sort(clf.feature_importances_)[-2])+1)
+print('3rd Top var =', var_imp.index(np.sort(clf.feature_importances_)[-3])+1)
+
+# Variable on Index-16 and Index-13 seems to be the top 2 variables
+top_var_index = var_imp.index(np.sort(clf.feature_importances_)[-1])
+second_top_var_index = var_imp.index(np.sort(clf.feature_importances_)[-2])
+
+X_train_1 = X_train.to_numpy()[np.where(y_train==1.0)]
+X_train_0 = X_train.to_numpy()[np.where(y_train==0.0)]
+
+np.random.shuffle(X_train_0)
+
+import matplotlib.pyplot as plt
+get_ipython().run_line_magic('matplotlib', 'inline')
+plt.rcParams['figure.figsize'] = [20, 20]
+
+plt.scatter(X_train_1[:, top_var_index], X_train_1[:, second_top_var_index], label='Actual Class-1 Examples')
+plt.scatter(X_train_0[:X_train_1.shape[0], top_var_index], X_train_0[:X_train_1.shape[0], second_top_var_index],
+            label='Actual Class-0 Examples')
+plt.legend()
+
+
+# ## Model building with balancing Classes
+# 
+# ##### Perform class balancing with :
+# - Random Oversampling
+# - SMOTE
+# - ADASYN
+
+# ## Model Building
+# - Build different models on the balanced dataset and see the result
+
+# In[ ]:
+
+
+# Logistic Regression
+from sklearn import linear_model #import the package
+
+num_C = ______  #--> list of values
+cv_num =   #--> list of values
+
+
+# #### perfom cross validation on the X_train & y_train to create:
+# - X_train_cv
+# - X_test_cv 
+# - y_train_cv
+# - y_test_cv 
+
+# ### Random Oversampling
+
+# In[ ]:
+
+
+from imblearn import over_sampling #- import the packages
+
+#perform cross validation & then balance classes on X_train_cv & y_train_cv using Random Oversampling
+
+#perform hyperparameter tuning
+
+#print the evaluation result by choosing a evaluation metric
+
+#print the optimum value of hyperparameters
+
+
+# ### Similarly explore other algorithms on balanced dataset by building models like:
+# - KNN
+# - SVM
+# - Decision Tree
+# - Random Forest
+# - XGBoost
+
+# ### Print the class distribution after applying SMOTE 
+
+# In[ ]:
+
+
+import warnings
+warnings.filterwarnings("ignore")
+
+
+sm = over_sampling.SMOTE(random_state=0)
+X_train_smote, y_train_smote = sm.fit_resample(X_train, y_train)
+# Artificial minority samples and corresponding minority labels from SMOTE are appended
+# below X_train and y_train respectively
+# So to exclusively get the artificial minority samples from SMOTE, we do
+X_train_smote_1 = X_train_smote[X_train.shape[0]:]
+
+X_train_1 = X_train.to_numpy()[np.where(y_train==1.0)]
+X_train_0 = X_train.to_numpy()[np.where(y_train==0.0)]
+
+
+plt.rcParams['figure.figsize'] = [20, 20]
+fig = plt.figure()
+
+plt.subplot(3, 1, 1)
+plt.scatter(X_train_1[:, 0], X_train_1[:, 1], label='Actual Class-1 Examples')
+plt.legend()
+
+plt.subplot(3, 1, 2)
+plt.scatter(X_train_1[:, 0], X_train_1[:, 1], label='Actual Class-1 Examples')
+plt.scatter(X_train_smote_1[:X_train_1.shape[0], 0], X_train_smote_1[:X_train_1.shape[0], 1],
+            label='Artificial SMOTE Class-1 Examples')
+plt.legend()
+
+plt.subplot(3, 1, 3)
+plt.scatter(X_train_1[:, 0], X_train_1[:, 1], label='Actual Class-1 Examples')
+plt.scatter(X_train_0[:X_train_1.shape[0], 0], X_train_0[:X_train_1.shape[0], 1], label='Actual Class-0 Examples')
+plt.legend()
+
+
+# In[ ]:
+
+
+#perform cross validation & then balance classes on X_train_cv & y_train_cv using SMOTE
+
+#perform hyperparameter tuning
+
+#print the evaluation result by choosing a evaluation metric
+
+#print the optimum value of hyperparameters
+
+
+# ##### Build models on other algorithms to see the better performing on SMOTE
+
+# ### Print the class distribution after applying ADASYN
+
+# In[ ]:
+
+
+import warnings
+warnings.filterwarnings("ignore")
+
+from imblearn import over_sampling
+
+ada = over_sampling.ADASYN(random_state=0)
+X_train_adasyn, y_train_adasyn = ada.fit_resample(X_train, y_train)
+# Artificial minority samples and corresponding minority labels from ADASYN are appended
+# below X_train and y_train respectively
+# So to exclusively get the artificial minority samples from ADASYN, we do
+X_train_adasyn_1 = X_train_adasyn[X_train.shape[0]:]
+
+X_train_1 = X_train.to_numpy()[np.where(y_train==1.0)]
+X_train_0 = X_train.to_numpy()[np.where(y_train==0.0)]
+
+
+
+import matplotlib.pyplot as plt
+get_ipython().run_line_magic('matplotlib', 'inline')
+plt.rcParams['figure.figsize'] = [20, 20]
+fig = plt.figure()
+
+plt.subplot(3, 1, 1)
+plt.scatter(X_train_1[:, 0], X_train_1[:, 1], label='Actual Class-1 Examples')
+plt.legend()
+
+plt.subplot(3, 1, 2)
+plt.scatter(X_train_1[:, 0], X_train_1[:, 1], label='Actual Class-1 Examples')
+plt.scatter(X_train_adasyn_1[:X_train_1.shape[0], 0], X_train_adasyn_1[:X_train_1.shape[0], 1],
+            label='Artificial ADASYN Class-1 Examples')
+plt.legend()
+
+plt.subplot(3, 1, 3)
+plt.scatter(X_train_1[:, 0], X_train_1[:, 1], label='Actual Class-1 Examples')
+plt.scatter(X_train_0[:X_train_1.shape[0], 0], X_train_0[:X_train_1.shape[0], 1], label='Actual Class-0 Examples')
+plt.legend()
+
+
+# In[ ]:
+
+
+#perform cross validation & then balance classes on X_train_cv & y_train_cv using ADASYN
+
+#perform hyperparameter tuning
+
+#print the evaluation result by choosing a evaluation metric
+
+#print the optimum value of hyperparameters
+
+
+# ##### Build models on other algorithms to see the better performing on ADASYN
+
+# ### Select the oversampling method which shows the best result on a model
+# - Apply the best hyperparameter on the model
+# - Predict on the test dataset
+
+# In[ ]:
+
+
+# perform the best oversampling method on X_train & y_train
+
+clf = ___  #initialise the model with optimum hyperparameters
+clf.fit( ) # fit on the balanced dataset
+print() --> #print the evaluation score on the X_test by choosing the best evaluation metric
+
+
+# ### Print the important features of the best model to understand the dataset
+
+# In[ ]:
+
+
+var_imp = []
+for i in clf.feature_importances_:
+    var_imp.append(i)
+print('Top var =', var_imp.index(np.sort(clf.feature_importances_)[-1])+1)
+print('2nd Top var =', var_imp.index(np.sort(clf.feature_importances_)[-2])+1)
+print('3rd Top var =', var_imp.index(np.sort(clf.feature_importances_)[-3])+1)
+
+# Variable on Index-13 and Index-9 seems to be the top 2 variables
+top_var_index = var_imp.index(np.sort(clf.feature_importances_)[-1])
+second_top_var_index = var_imp.index(np.sort(clf.feature_importances_)[-2])
+
+X_train_1 = X_train.to_numpy()[np.where(y_train==1.0)]
+X_train_0 = X_train.to_numpy()[np.where(y_train==0.0)]
+
+np.random.shuffle(X_train_0)
+
+import matplotlib.pyplot as plt
+get_ipython().run_line_magic('matplotlib', 'inline')
+plt.rcParams['figure.figsize'] = [20, 20]
+
+plt.scatter(X_train_1[:, top_var_index], X_train_1[:, second_top_var_index], label='Actual Class-1 Examples')
+plt.scatter(X_train_0[:X_train_1.shape[0], top_var_index], X_train_0[:X_train_1.shape[0], second_top_var_index],
+            label='Actual Class-0 Examples')
+plt.legend()
+
+
+# In[ ]:
+
+
+#### Print the FPR,TPR & select the best threshold from the roc curve
+
+
+# In[ ]:
+
+
+print('Train auc =', metrics.roc_auc_score(_________)
+fpr, tpr, thresholds = metrics.roc_curve(_________)
+threshold = thresholds[np.argmax(tpr-fpr)]
+print(threshold)
+
+
+
+```
+
 # Exploratory Data Analysis
 
 ```{python}
@@ -16,26 +454,38 @@ import os
 os.chdir("/Users/eklavya/projects/education/formalEducation/DataScience/DataScienceAssignments/FinalProject/fraud_detection/")
 
 
-import numpy as np
-import pandas as pd
+
+# Imported Libraries
+
+import numpy as np 
+import pandas as pd 
+import tensorflow as tf
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA, TruncatedSVD
+import matplotlib.patches as mpatches
+import time
 
-from sklearn.neighbors import NearestNeighbors
-from random import sample
-from numpy.random import uniform
-from math import isnan
+# Classifier Libraries
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+import collections
 
-from sklearn.model_selection import cross_val_score
-from sklearn.metrics import classification_report, confusion_matrix
-from sklearn import metrics
-from sklearn.decomposition import PCA, IncrementalPCA
+
+# Other Libraries
 from sklearn.model_selection import train_test_split
-import sklearn
-from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score
-
+from sklearn.pipeline import make_pipeline
+from imblearn.pipeline import make_pipeline as imbalanced_make_pipeline
+from imblearn.over_sampling import SMOTE
+from imblearn.under_sampling import NearMiss
+from imblearn.metrics import classification_report_imbalanced
+from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, accuracy_score, classification_report
+from collections import Counter
+from sklearn.model_selection import KFold, StratifiedKFold
 
 import warnings
 warnings.filterwarnings('ignore')
