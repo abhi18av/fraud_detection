@@ -449,12 +449,6 @@ print(threshold)
 # Exploratory Data Analysis
 
 ```{python}
-
-import os
-os.chdir("/Users/eklavya/projects/education/formalEducation/DataScience/DataScienceAssignments/FinalProject/fraud_detection/")
-
-
-
 # Imported Libraries
 
 import numpy as np 
