@@ -1,0 +1,353 @@
+---
+title: "scratch"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = normalizePath("/Users/eklavya/projects/education/formalEducation/DataScience/DataScienceAssignments/FinalProject/fraud_detection/"))  
+```
+
+
+
+```{python}
+
+import os
+os.chdir("/Users/eklavya/projects/education/formalEducation/DataScience/DataScienceAssignments/FinalProject/fraud_detection/")
+
+
+```
+
+
+# Credit Card Fraud Detection
+
+```{python}
+
+import numpy as np 
+import pandas as pd 
+#import tensorflow as tf
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA, TruncatedSVD
+import matplotlib.patches as mpatches
+import time
+
+# Classifier Libraries
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+import collections
+
+
+# Other Libraries
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import make_pipeline
+#from imblearn.pipeline import make_pipeline as imbalanced_make_pipeline
+#from imblearn.over_sampling import SMOTE
+#from imblearn.under_sampling import NearMiss
+#from imblearn.metrics import classification_report_imbalanced
+from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, accuracy_score, classification_report
+from collections import Counter
+from sklearn.model_selection import KFold, StratifiedKFold
+
+import warnings
+warnings.filterwarnings('ignore')
+sns.set_style('whitegrid')
+sns.set_context('paper')
+
+
+# Pandas options
+pd.set_option('display.max_colwidth', 1000, 'display.max_rows', None, 'display.max_columns', None)
+
+# Plotting options
+#%matplotlib inline
+plt.style.use('ggplot')
+sns.set(style='whitegrid')
+
+
+
+def print_ln():
+    print('-' * 80, '\n')
+
+
+```
+
+
+# Exploratory data analysis
+
+
+```{python}
+# In[ ]:
+
+
+df = pd.read_csv('./data/raw/creditcard.csv')
+df.head()
+
+```
+
+
+```{python}
+
+df.describe()
+```
+
+```{python}
+df.isnull().sum()
+
+```
+
+```{python}
+count_classes = pd.DataFrame(pd.value_counts(df['Class'], sort = True).sort_index())
+count_classes
+
+```
+
+```{python}
+print("Fraud")
+print(df.Time[df.Class == 1].describe())
+print_ln()
+print("Normal")
+print(df.Time[df.Class == 0].describe())
+
+```
+
+```{python}
+f, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(12,4))
+
+bins = 50
+
+ax1.hist(df.Time[df.Class == 1], bins = bins)
+ax1.set_title('Fraud')
+
+ax2.hist(df.Time[df.Class == 0], bins = bins)
+ax2.set_title('Normal')
+
+plt.xlabel('Time (in Seconds)')
+plt.ylabel('Number of Transactions')
+plt.show()
+
+```
+
+```{python}
+print("Fraud")
+print(df.Amount[df.Class == 1].describe())
+print_ln()
+print("Normal")
+print(df.Amount[df.Class == 0].describe())
+
+```
+
+```{python}
+f, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(12,4))
+
+bins = 30
+
+ax1.hist(df.Amount[df.Class == 1], bins = bins)
+ax1.set_title('Fraud')
+
+ax2.hist(df.Amount[df.Class == 0], bins = bins)
+ax2.set_title('Normal')
+
+plt.xlabel('Amount ($)')
+plt.ylabel('Number of Transactions')
+plt.yscale('log')
+plt.show()
+
+
+```
+
+```{python}
+df['Amount_max_fraud'] = 1
+df.loc[df.Amount <= 2125.87, 'Amount_max_fraud'] = 0
+df.head()
+
+
+```
+
+```{python}
+f, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(12,6))
+
+ax1.scatter(df.Time[df.Class == 1], df.Amount[df.Class == 1])
+ax1.set_title('Fraud')
+
+ax2.scatter(df.Time[df.Class == 0], df.Amount[df.Class == 0])
+ax2.set_title('Normal')
+
+plt.xlabel('Time (in Seconds)')
+plt.ylabel('Amount')
+plt.show()
+
+```
+
+```{python}
+
+
+```
+
+```{python}
+
+
+```
+
+
+```{python}
+# In[ ]:
+
+
+#observe the different feature type present in the data
+
+
+# Here we will observe the distribution of our classes
+
+# In[ ]:
+
+
+classes=df['Class'].value_counts()
+normal_share=classes[0]/df['Class'].count()*100
+fraud_share=classes[1]/df['Class'].count()*100
+
+
+# In[ ]:
+
+```
+
+```{python}
+
+
+# Create a bar plot for the number and percentage of fraudulent vs non-fraudulent transcations
+
+
+# In[ ]:
+
+
+```
+
+```{python}
+
+# Create a scatter plot to observe the distribution of classes with time
+
+
+# In[ ]:
+
+
+# Create a scatter plot to observe the distribution of classes with Amount
+
+
+# In[ ]:
+
+
+# Drop unnecessary columns
+
+
+```
+
+```{python}
+
+# ### Splitting the data into train & test data
+
+# In[ ]:
+
+
+y= #class variable
+
+
+# In[ ]:
+
+
+from sklearn import model_selection
+
+X_train, X_test, y_train, y_test = 
+
+
+# ##### Preserve X_test & y_test to evaluate on the test data once you build the model
+
+# In[ ]:
+
+
+print(np.sum(y))
+print(np.sum(y_train))
+print(np.sum(y_test))
+
+
+```
+
+```{python}
+
+# ### Plotting the distribution of a variable
+
+# In[ ]:
+
+
+# plot the histogram of a variable from the dataset to see the skewness
+
+```
+
+```{python}
+
+
+# ### If there is skewness present in the distribution use:
+# - <b>Power Transformer</b> package present in the <b>preprocessing library provided by sklearn</b> to make distribution more gaussian
+
+# In[ ]:
+
+
+# - Apply : preprocessing.PowerTransformer(copy=False) to fit & transform the train & test data
+
+
+# In[ ]:
+
+
+# plot the histogram of a variable from the dataset again to see the result 
+
+```
+
+```{python}
+
+
+# ## Model Building
+# - Build different models on the imbalanced dataset and see the result
+
+```
+
+```{python}
+
+# In[ ]:
+
+
+# Logistic Regression
+from sklearn import linear_model #import the package
+
+num_C = ______  #--> list of values
+cv_num =   #--> list of values
+
+
+# #### perfom cross validation on the X_train & y_train to create:
+# - X_train_cv
+# - X_test_cv 
+# - y_train_cv
+# - y_test_cv 
+
+# In[ ]:
+
+
+```
+
+```{python}
+
+#perform cross validation
+
+```
+
+```{python}
+
+#perform hyperparameter tuning
+
+#print the evaluation result by choosing a evaluation metric
+
+#print the optimum value of hyperparameters
+
+```
+
