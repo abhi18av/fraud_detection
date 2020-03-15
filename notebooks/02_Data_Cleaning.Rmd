@@ -25,6 +25,7 @@ os.chdir("/Users/eklavya/projects/education/formalEducation/DataScience/DataScie
 
 import numpy as np 
 import pandas as pd 
+import scipy as sp
 #import tensorflow as tf
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -76,28 +77,33 @@ def print_ln():
 ```
 
 
+
+# Splitting the data into train & test data
+
 ```{python}
 
-# ### Splitting the data into train & test data
+df = pd.read_csv('./data/raw/creditcard.csv')
+df.head()
 
-# In[ ]:
-
-
-y= #class variable
+```
 
 
-# In[ ]:
+```{python}
+
+X = df.drop(labels='Class', axis=1) # Features
+y = df.loc[:,'Class']               # Response
 
 
+```
+
+
+
+```{python}
 from sklearn import model_selection
 
-X_train, X_test, y_train, y_test = 
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1, stratify=y)
 
-
-# ##### Preserve X_test & y_test to evaluate on the test data once you build the model
-
-# In[ ]:
-
+# Preserve X_test & y_test to evaluate on the test data once you build the model
 
 print(np.sum(y))
 print(np.sum(y_train))
@@ -106,16 +112,32 @@ print(np.sum(y_test))
 
 ```
 
+
+
+# Plotting the distribution of a variable
+
+
+
+That's a strong right skew. Let's use a power transform to bring the transaction amounts closer to a normal distribution. We'll use the Box-Cox transform in SciPy, but some of the amounts are zero (min = 0 above), so we need to shift the amounts first to make them positive. We'll shift by a very small amount, just $10^{-9}$.
+
+
 ```{python}
+X_train.loc[:,'Amount'] = X_train['Amount'] + 1e-9 # Shift all amounts by 1e-9
 
-# ### Plotting the distribution of a variable
+# Perform the Box-Cox transform:
 
-# In[ ]:
+X_train.loc[:,'Amount'], maxlog, (min_ci, max_ci) = sp.stats.boxcox(X_train['Amount'], alpha=0.01)
+```
 
+
+
+```{python}
 
 # plot the histogram of a variable from the dataset to see the skewness
 
 ```
+
+
 
 ```{python}
 
@@ -135,3 +157,5 @@ print(np.sum(y_test))
 # plot the histogram of a variable from the dataset again to see the result 
 
 ```
+
+

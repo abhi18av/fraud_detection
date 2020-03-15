@@ -23,6 +23,7 @@ os.chdir("/Users/eklavya/projects/education/formalEducation/DataScience/DataScie
 
 ```{python}
 
+import scipy as sp
 import numpy as np 
 import pandas as pd 
 #import tensorflow as tf
