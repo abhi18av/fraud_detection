@@ -19,39 +19,79 @@ os.chdir("/Users/eklavya/projects/education/formalEducation/DataScience/DataScie
 ```
 
 
-# Official Starter Code
+# Credit Card Fraud Detection
 
 ```{python}
-#!/usr/bin/env python
-# coding: utf-8
 
-# ## Credit Card Fraud Detection
-# 
-# In this project you will predict fraudulent credit card transactions with the help of Machine learning models. Please import the following libraries to get started.
-
-# In[ ]:
-
-
-import numpy as np
-import pandas as pd
-
+import numpy as np 
+import pandas as pd 
+#import tensorflow as tf
 import matplotlib.pyplot as plt
-get_ipython().run_line_magic('matplotlib', 'inline')
 import seaborn as sns
+from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA, TruncatedSVD
+import matplotlib.patches as mpatches
+import time
 
-from sklearn import metrics
-from sklearn import preprocessing
+# Classifier Libraries
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+import collections
 
 
-# ## Exploratory data analysis
+# Other Libraries
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import make_pipeline
+#from imblearn.pipeline import make_pipeline as imbalanced_make_pipeline
+#from imblearn.over_sampling import SMOTE
+#from imblearn.under_sampling import NearMiss
+#from imblearn.metrics import classification_report_imbalanced
+from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, accuracy_score, classification_report
+from collections import Counter
+from sklearn.model_selection import KFold, StratifiedKFold
 
+import warnings
+warnings.filterwarnings('ignore')
+sns.set_style('whitegrid')
+sns.set_context('paper')
+
+
+# Pandas options
+pd.set_option('display.max_colwidth', 1000, 'display.max_rows', None, 'display.max_columns', None)
+
+# Plotting options
+#%matplotlib inline
+plt.style.use('ggplot')
+sns.set(style='whitegrid')
+
+
+
+def print_ln():
+    print('-' * 80, '\n')
+
+
+```
+
+
+# Exploratory data analysis
+
+
+```{python}
 # In[ ]:
 
 
-df = pd.read_csv('creditcard.csv')
+df = pd.read_csv('./data/raw/creditcard.csv')
 df.head()
 
+```
 
+
+
+
+```{python}
 # In[ ]:
 
 
@@ -443,52 +483,6 @@ threshold = thresholds[np.argmax(tpr-fpr)]
 print(threshold)
 
 
-
-```
-
-# Exploratory Data Analysis
-
-```{python}
-# Imported Libraries
-
-import numpy as np 
-import pandas as pd 
-import tensorflow as tf
-import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.manifold import TSNE
-from sklearn.decomposition import PCA, TruncatedSVD
-import matplotlib.patches as mpatches
-import time
-
-# Classifier Libraries
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
-import collections
-
-
-# Other Libraries
-from sklearn.model_selection import train_test_split
-from sklearn.pipeline import make_pipeline
-from imblearn.pipeline import make_pipeline as imbalanced_make_pipeline
-from imblearn.over_sampling import SMOTE
-from imblearn.under_sampling import NearMiss
-from imblearn.metrics import classification_report_imbalanced
-from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, accuracy_score, classification_report
-from collections import Counter
-from sklearn.model_selection import KFold, StratifiedKFold
-
-import warnings
-warnings.filterwarnings('ignore')
-sns.set_style('whitegrid')
-sns.set_context('paper')
-
-
-def print_ln():
-    print('-' * 80, '\n')
 
 ```
 
