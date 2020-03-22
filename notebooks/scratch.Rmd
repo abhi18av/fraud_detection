@@ -331,6 +331,8 @@ y = df_credit["Class"].values # transforming the values in array
 # In[ ]:
 
 
+
+
 # the function that we will use to better evaluate the model
 def print_results(headline, true_value, pred):
     print(headline)
@@ -341,6 +343,48 @@ def print_results(headline, true_value, pred):
 
 # splitting data into training and test set
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=2, test_size=0.20)
+
+
+model_rf1= RandomForestClassifier(n_estimators= 100,                                   
+                                  random_state = 100,
+                                  max_depth=5, 
+                                  min_samples_leaf=50,
+                                  min_samples_split=50)
+
+#Train the model using the training sets y_pred=clf.predict(X_test)
+model_rf1.fit(X_train, y_train)
+
+y_pred= model_rf1.predict(X_test)
+
+
+print("Confusion Matrix: ")
+print(confusion_matrix(y_test, y_pred))
+
+print('\nPipeline Score {}'.format(model_rf1.score(X_test, y_test)))
+
+print_results("\nRandomForest classification", y_test, y_pred)
+
+# Compute predicted probabilities: y_pred_prob
+y_pred_prob = model_rf1.predict_proba(X_test)[:,1]
+
+# Generate precision recall curve values: precision, recall, thresholds
+precision, recall, thresholds = precision_recall_curve(y_test, y_pred_prob)
+
+# Plot ROC curve
+plt.plot(precision, recall)
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision Recall Curve')
+plt.show()
+
+
+
+```
+
+
+```{python}
+
+
 
 classifier = RandomForestClassifier
 
@@ -501,6 +545,10 @@ results = cross_val_score(rf,X_train, y_train, cv=10, scoring='recall')
 results
 
 
+```
+
+
+```{python}
 # ## Modelling Logistic Regression with Hyper Parameters
 
 # In[ ]:
