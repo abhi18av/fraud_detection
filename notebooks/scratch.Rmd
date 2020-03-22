@@ -22,644 +22,574 @@ os.chdir("/Users/eklavya/projects/education/formalEducation/DataScience/DataScie
 # Credit Card Fraud Detection
 
 ```{python}
-
-import numpy as np 
-import pandas as pd 
-#import tensorflow as tf
-import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.manifold import TSNE
-from sklearn.decomposition import PCA, TruncatedSVD
-import matplotlib.patches as mpatches
-import time
-
-# Classifier Libraries
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
-import collections
-
-
-# Other Libraries
-from sklearn.model_selection import train_test_split
-from sklearn.pipeline import make_pipeline
-#from imblearn.pipeline import make_pipeline as imbalanced_make_pipeline
-#from imblearn.over_sampling import SMOTE
-#from imblearn.under_sampling import NearMiss
-#from imblearn.metrics import classification_report_imbalanced
-from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, accuracy_score, classification_report
-from collections import Counter
-from sklearn.model_selection import KFold, StratifiedKFold
-
-import warnings
-warnings.filterwarnings('ignore')
-sns.set_style('whitegrid')
-sns.set_context('paper')
-
-
-# Pandas options
-pd.set_option('display.max_colwidth', 1000, 'display.max_rows', None, 'display.max_columns', None)
-
-# Plotting options
-#%matplotlib inline
-plt.style.use('ggplot')
-sns.set(style='whitegrid')
-
-
-
-def print_ln():
-    print('-' * 80, '\n')
-
-
-```
-
-
-# Exploratory data analysis
-
-
-```{python}
-# In[ ]:
-
-
-df = pd.read_csv('./data/raw/creditcard.csv')
-df.head()
-
-```
-
-
-```{python}
-
-df.describe()
-```
-
-```{python}
-df.isnull().sum()
-
-```
-
-```{python}
-count_classes = pd.DataFrame(pd.value_counts(df['Class'], sort = True).sort_index())
-count_classes
-
-```
-
-```{python}
-print("Fraud")
-print(df.Time[df.Class == 1].describe())
-print_ln()
-print("Normal")
-print(df.Time[df.Class == 0].describe())
-
-```
-
-```{python}
-f, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(12,4))
-
-bins = 50
-
-ax1.hist(df.Time[df.Class == 1], bins = bins)
-ax1.set_title('Fraud')
-
-ax2.hist(df.Time[df.Class == 0], bins = bins)
-ax2.set_title('Normal')
-
-plt.xlabel('Time (in Seconds)')
-plt.ylabel('Number of Transactions')
-plt.show()
-
-```
-
-```{python}
-print("Fraud")
-print(df.Amount[df.Class == 1].describe())
-print_ln()
-print("Normal")
-print(df.Amount[df.Class == 0].describe())
-
-```
-
-```{python}
-f, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(12,4))
-
-bins = 30
-
-ax1.hist(df.Amount[df.Class == 1], bins = bins)
-ax1.set_title('Fraud')
-
-ax2.hist(df.Amount[df.Class == 0], bins = bins)
-ax2.set_title('Normal')
-
-plt.xlabel('Amount ($)')
-plt.ylabel('Number of Transactions')
-plt.yscale('log')
-plt.show()
-
-
-```
-
-```{python}
-df['Amount_max_fraud'] = 1
-df.loc[df.Amount <= 2125.87, 'Amount_max_fraud'] = 0
-df.head()
-
-
-```
-
-```{python}
-f, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(12,6))
-
-ax1.scatter(df.Time[df.Class == 1], df.Amount[df.Class == 1])
-ax1.set_title('Fraud')
-
-ax2.scatter(df.Time[df.Class == 0], df.Amount[df.Class == 0])
-ax2.set_title('Normal')
-
-plt.xlabel('Time (in Seconds)')
-plt.ylabel('Amount')
-plt.show()
-
-```
-
-```{python}
-
-
-```
-
-```{python}
-
-
-```
-
-
-```{python}
-# In[ ]:
-
-
-#observe the different feature type present in the data
-
-
-# Here we will observe the distribution of our classes
-
-# In[ ]:
-
-
-classes=df['Class'].value_counts()
-normal_share=classes[0]/df['Class'].count()*100
-fraud_share=classes[1]/df['Class'].count()*100
-
-
-# In[ ]:
-
-```
-
-```{python}
-
-
-# Create a bar plot for the number and percentage of fraudulent vs non-fraudulent transcations
-
-
-# In[ ]:
-
-
-```
-
-```{python}
-
-# Create a scatter plot to observe the distribution of classes with time
-
-
-# In[ ]:
-
-
-# Create a scatter plot to observe the distribution of classes with Amount
-
-
-# In[ ]:
-
-
-# Drop unnecessary columns
-
-
-```
-
-```{python}
-
-# ### Splitting the data into train & test data
-
-# In[ ]:
-
-
-y= #class variable
-
-
-# In[ ]:
-
-
-from sklearn import model_selection
-
-X_train, X_test, y_train, y_test = 
-
-
-# ##### Preserve X_test & y_test to evaluate on the test data once you build the model
-
-# In[ ]:
-
-
-print(np.sum(y))
-print(np.sum(y_train))
-print(np.sum(y_test))
-
-
-```
-
-```{python}
-
-# ### Plotting the distribution of a variable
-
-# In[ ]:
-
-
-# plot the histogram of a variable from the dataset to see the skewness
-
-```
-
-```{python}
-
-
-# ### If there is skewness present in the distribution use:
-# - <b>Power Transformer</b> package present in the <b>preprocessing library provided by sklearn</b> to make distribution more gaussian
-
-# In[ ]:
-
-
-# - Apply : preprocessing.PowerTransformer(copy=False) to fit & transform the train & test data
-
-
-# In[ ]:
-
-
-# plot the histogram of a variable from the dataset again to see the result 
-
-```
-
-```{python}
-
-
-# ## Model Building
-# - Build different models on the imbalanced dataset and see the result
-
-```
-
-```{python}
-
-# In[ ]:
-
-
-# Logistic Regression
-from sklearn import linear_model #import the package
-
-num_C = ______  #--> list of values
-cv_num =   #--> list of values
-
-
-# #### perfom cross validation on the X_train & y_train to create:
-# - X_train_cv
-# - X_test_cv 
-# - y_train_cv
-# - y_test_cv 
-
-# In[ ]:
-
-
-```
-
-```{python}
-
-#perform cross validation
-
-```
-
-```{python}
-
-#perform hyperparameter tuning
-
-#print the evaluation result by choosing a evaluation metric
-
-#print the optimum value of hyperparameters
-
-```
-
-```{python}
-
-
-# ### Similarly explore other algorithms by building models like:
-# - Decision Tree
-# - Random Forest
-# - XGBoost
-
-```
-
-```{python}
-
-# #### Proceed with the model which shows the best result 
-# - Apply the best hyperparameter on the model
-# - Predict on the test dataset
-
-# In[ ]:
-
-
-clf = ___  #initialise the model with optimum hyperparameters
-clf.fit(X_train, y_train)
-print --> #print the evaluation score on the X_test by choosing the best evaluation metric
-
-```
-
-```{python}
-
-
-# ### Print the important features of the best model to understand the dataset
-# - This will not give much explanation on the already transformed dataset
-# - But it will help us in understanding if the dataset is not PCA transformed
-
-# In[ ]:
-
-
-var_imp = []
-for i in clf.feature_importances_:
-    var_imp.append(i)
-print('Top var =', var_imp.index(np.sort(clf.feature_importances_)[-1])+1)
-print('2nd Top var =', var_imp.index(np.sort(clf.feature_importances_)[-2])+1)
-print('3rd Top var =', var_imp.index(np.sort(clf.feature_importances_)[-3])+1)
-
-# Variable on Index-16 and Index-13 seems to be the top 2 variables
-top_var_index = var_imp.index(np.sort(clf.feature_importances_)[-1])
-second_top_var_index = var_imp.index(np.sort(clf.feature_importances_)[-2])
-
-X_train_1 = X_train.to_numpy()[np.where(y_train==1.0)]
-X_train_0 = X_train.to_numpy()[np.where(y_train==0.0)]
-
-np.random.shuffle(X_train_0)
-
-import matplotlib.pyplot as plt
-get_ipython().run_line_magic('matplotlib', 'inline')
-plt.rcParams['figure.figsize'] = [20, 20]
-
-plt.scatter(X_train_1[:, top_var_index], X_train_1[:, second_top_var_index], label='Actual Class-1 Examples')
-plt.scatter(X_train_0[:X_train_1.shape[0], top_var_index], X_train_0[:X_train_1.shape[0], second_top_var_index],
-            label='Actual Class-0 Examples')
-plt.legend()
-
-```
-
-```{python}
-
-
-# ## Model building with balancing Classes
+# <h2>Introduction to Dataset</h2>
 # 
-# ##### Perform class balancing with :
-# - Random Oversampling
-# - SMOTE
-# - ADASYN
+# The datasets contains transactions made by credit cards in September 2013 by european cardholders. This dataset presents transactions that occurred in two days, where we have 492 frauds out of 284,807 transactions. The dataset is highly unbalanced, the positive class (frauds) account for 0.172% of all transactions.
+# 
+# It contains only numerical input variables which are the result of a PCA transformation. Unfortunately, due to confidentiality issues, we cannot provide the original features and more background information about the data. Features V1, V2, ... V28 are the principal components obtained with PCA, the only features which have not been transformed with PCA are 'Time' and 'Amount'. Feature 'Time' contains the seconds elapsed between each transaction and the first transaction in the dataset. The feature 'Amount' is the transaction Amount, this feature can be used for example-dependant cost-senstive learning. Feature 'Class' is the response variable and it takes value 1 in case of fraud and 0 otherwise.
+# 
+# Given the class imbalance ratio, we recommend measuring the accuracy using the Area Under the Precision-Recall Curve (AUPRC). Confusion matrix accuracy is not meaningful for unbalanced classification.
+# 
+# 
 
-# ## Model Building
-# - Build different models on the balanced dataset and see the result
-
-```
-
-```{python}
+# <h2>Let's start importing the librarys and looking the data</h2>
 
 # In[ ]:
 
 
-# Logistic Regression
-from sklearn import linear_model #import the package
-
-num_C = ______  #--> list of values
-cv_num =   #--> list of values
-
-
-# #### perfom cross validation on the X_train & y_train to create:
-# - X_train_cv
-# - X_test_cv 
-# - y_train_cv
-# - y_test_cv 
-
-```
-
-```{python}
-
-# ### Random Oversampling
-
-# In[ ]:
-
-
-from imblearn import over_sampling #- import the packages
-
-#perform cross validation & then balance classes on X_train_cv & y_train_cv using Random Oversampling
-
-#perform hyperparameter tuning
-
-#print the evaluation result by choosing a evaluation metric
-
-#print the optimum value of hyperparameters
-
-
-```
-
-```{python}
-
-# ### Similarly explore other algorithms on balanced dataset by building models like:
-# - Decision Tree
-# - Random Forest
-# - XGBoost
-
-```
-
-```{python}
-
-# ### Print the class distribution after applying SMOTE 
-
-# In[ ]:
-
-
-
-
-sm = over_sampling.SMOTE(random_state=0)
-X_train_smote, y_train_smote = sm.fit_resample(X_train, y_train)
-# Artificial minority samples and corresponding minority labels from SMOTE are appended
-# below X_train and y_train respectively
-# So to exclusively get the artificial minority samples from SMOTE, we do
-X_train_smote_1 = X_train_smote[X_train.shape[0]:]
-
-X_train_1 = X_train.to_numpy()[np.where(y_train==1.0)]
-X_train_0 = X_train.to_numpy()[np.where(y_train==0.0)]
-
-
-plt.rcParams['figure.figsize'] = [20, 20]
-fig = plt.figure()
-
-plt.subplot(3, 1, 1)
-plt.scatter(X_train_1[:, 0], X_train_1[:, 1], label='Actual Class-1 Examples')
-plt.legend()
-
-plt.subplot(3, 1, 2)
-plt.scatter(X_train_1[:, 0], X_train_1[:, 1], label='Actual Class-1 Examples')
-plt.scatter(X_train_smote_1[:X_train_1.shape[0], 0], X_train_smote_1[:X_train_1.shape[0], 1],
-            label='Artificial SMOTE Class-1 Examples')
-plt.legend()
-
-plt.subplot(3, 1, 3)
-plt.scatter(X_train_1[:, 0], X_train_1[:, 1], label='Actual Class-1 Examples')
-plt.scatter(X_train_0[:X_train_1.shape[0], 0], X_train_0[:X_train_1.shape[0], 1], label='Actual Class-0 Examples')
-plt.legend()
+import pandas as pd #To hand with data 
+import numpy as np #To math 
+import seaborn as sns #to visualization
+import matplotlib.pyplot as plt # to plot the graphs
+import matplotlib.gridspec as gridspec # to do the grid of plots
 
 
 # In[ ]:
 
 
-#perform cross validation & then balance classes on X_train_cv & y_train_cv using SMOTE
-
-#perform hyperparameter tuning
-
-#print the evaluation result by choosing a evaluation metric
-
-#print the optimum value of hyperparameters
-
-
-```
-
-```{python}
-
-# ##### Build models on other algorithms to see the better performing on SMOTE
-
-```
-
-```{python}
-
-# ### Print the class distribution after applying ADASYN
-
-# In[ ]:
-
-
-
-from imblearn import over_sampling
-
-ada = over_sampling.ADASYN(random_state=0)
-X_train_adasyn, y_train_adasyn = ada.fit_resample(X_train, y_train)
-# Artificial minority samples and corresponding minority labels from ADASYN are appended
-# below X_train and y_train respectively
-# So to exclusively get the artificial minority samples from ADASYN, we do
-X_train_adasyn_1 = X_train_adasyn[X_train.shape[0]:]
-
-X_train_1 = X_train.to_numpy()[np.where(y_train==1.0)]
-X_train_0 = X_train.to_numpy()[np.where(y_train==0.0)]
-
-
-
-import matplotlib.pyplot as plt
-get_ipython().run_line_magic('matplotlib', 'inline')
-plt.rcParams['figure.figsize'] = [20, 20]
-fig = plt.figure()
-
-plt.subplot(3, 1, 1)
-plt.scatter(X_train_1[:, 0], X_train_1[:, 1], label='Actual Class-1 Examples')
-plt.legend()
-
-plt.subplot(3, 1, 2)
-plt.scatter(X_train_1[:, 0], X_train_1[:, 1], label='Actual Class-1 Examples')
-plt.scatter(X_train_adasyn_1[:X_train_1.shape[0], 0], X_train_adasyn_1[:X_train_1.shape[0], 1],
-            label='Artificial ADASYN Class-1 Examples')
-plt.legend()
-
-plt.subplot(3, 1, 3)
-plt.scatter(X_train_1[:, 0], X_train_1[:, 1], label='Actual Class-1 Examples')
-plt.scatter(X_train_0[:X_train_1.shape[0], 0], X_train_0[:X_train_1.shape[0], 1], label='Actual Class-0 Examples')
-plt.legend()
+#loading the data
+df_credit = pd.read_csv('./data/raw/creditcard.csv')
 
 
 # In[ ]:
 
 
-#perform cross validation & then balance classes on X_train_cv & y_train_cv using ADASYN
+#looking the how data looks
+df_credit.head()
 
-#perform hyperparameter tuning
-
-#print the evaluation result by choosing a evaluation metric
-
-#print the optimum value of hyperparameters
-
-
-```
-
-```{python}
-
-# ##### Build models on other algorithms to see the better performing on ADASYN
-
-# ### Select the oversampling method which shows the best result on a model
-# - Apply the best hyperparameter on the model
-# - Predict on the test dataset
 
 # In[ ]:
 
 
-# perform the best oversampling method on X_train & y_train
+#looking the type and searching for null values
+df_credit.info()
 
-clf = ___  #initialise the model with optimum hyperparameters
-clf.fit( ) # fit on the balanced dataset
-print() --> #print the evaluation score on the X_test by choosing the best evaluation metric
-
-
-# ### Print the important features of the best model to understand the dataset
 
 # In[ ]:
 
 
-var_imp = []
-for i in clf.feature_importances_:
-    var_imp.append(i)
-print('Top var =', var_imp.index(np.sort(clf.feature_importances_)[-1])+1)
-print('2nd Top var =', var_imp.index(np.sort(clf.feature_importances_)[-2])+1)
-print('3rd Top var =', var_imp.index(np.sort(clf.feature_importances_)[-3])+1)
+# The data is stardarized, I will explore them later
+#For now I will look the "normal" columns
+df_credit[["Time","Amount","Class"]].describe()
 
-# Variable on Index-13 and Index-9 seems to be the top 2 variables
-top_var_index = var_imp.index(np.sort(clf.feature_importances_)[-1])
-second_top_var_index = var_imp.index(np.sort(clf.feature_importances_)[-2])
 
-X_train_1 = X_train.to_numpy()[np.where(y_train==1.0)]
-X_train_0 = X_train.to_numpy()[np.where(y_train==0.0)]
-
-np.random.shuffle(X_train_0)
-
-import matplotlib.pyplot as plt
-get_ipython().run_line_magic('matplotlib', 'inline')
-plt.rcParams['figure.figsize'] = [20, 20]
-
-plt.scatter(X_train_1[:, top_var_index], X_train_1[:, second_top_var_index], label='Actual Class-1 Examples')
-plt.scatter(X_train_0[:X_train_1.shape[0], top_var_index], X_train_0[:X_train_1.shape[0], second_top_var_index],
-            label='Actual Class-0 Examples')
-plt.legend()
-
+# <h2>Firstly, I will explore through 3 different columns:</h2>
+# - Time
+# - Amount
+# - Class
 
 # In[ ]:
 
 ```
 
-```{python}
 
-#### Print the FPR,TPR & select the best threshold from the roc curve
+```{python}
+#Lets start looking the difference by Normal and Fraud transactions
+print("Distribuition of Normal(0) and Frauds(1): ")
+print(df_credit["Class"].value_counts())
+
+plt.figure(figsize=(7,5))
+sns.countplot(df_credit['Class'])
+plt.title("Class Count", fontsize=18)
+plt.xlabel("Is fraud?", fontsize=15)
+plt.ylabel("Count", fontsize=15)
+plt.show()
+
+
+# We have a clearly imbalanced data.<br>
+# It's very common when treating of frauds... <br>
+# 
+# <b>First</b> I will do some explore through the Time and Amount. <br>
+# <b>Second</b> I will explore the V's Features, that are PCA's 
+
+# ## Time Features and some Feature Engineering
+# As our Time feature are in seconds we will transform it ot minutes and hours to get a better understand of the patterns
+
+# In[ ]:
+
+
+timedelta = pd.to_timedelta(df_credit['Time'], unit='s')
+df_credit['Time_min'] = (timedelta.dt.components.minutes).astype(int)
+df_credit['Time_hour'] = (timedelta.dt.components.hours).astype(int)
 
 
 # In[ ]:
 
 
-print('Train auc =', metrics.roc_auc_score(_________)
-fpr, tpr, thresholds = metrics.roc_curve(_________)
-threshold = thresholds[np.argmax(tpr-fpr)]
-print(threshold)
+#Exploring the distribuition by Class types throught hours and minutes
+plt.figure(figsize=(12,5))
+sns.distplot(df_credit[df_credit['Class'] == 0]["Time_hour"], 
+             color='g')
+sns.distplot(df_credit[df_credit['Class'] == 1]["Time_hour"], 
+             color='r')
+plt.title('Fraud x Normal Transactions by Hours', fontsize=17)
+plt.xlim([-1,25])
+plt.show()
 
 
+# In[ ]:
+
+
+#Exploring the distribuition by Class types throught hours and minutes
+plt.figure(figsize=(12,5))
+sns.distplot(df_credit[df_credit['Class'] == 0]["Time_min"], 
+             color='g')
+sns.distplot(df_credit[df_credit['Class'] == 1]["Time_min"], 
+             color='r')
+plt.title('Fraud x Normal Transactions by minutes', fontsize=17)
+plt.xlim([-1,61])
+plt.show()
+
+
+# - Interesting distribuition, but don't sounds like a clear pattern of action
+
+# ## Looking the statistics of our Amount class frauds and normal transactions
+
+# In[ ]:
+
+
+#To clearly the data of frauds and no frauds
+df_fraud = df_credit[df_credit['Class'] == 1]
+df_normal = df_credit[df_credit['Class'] == 0]
+
+print("Fraud transaction statistics")
+print(df_fraud["Amount"].describe())
+print("\nNormal transaction statistics")
+print(df_normal["Amount"].describe())
+
+```
+
+
+
+```{python}
+# Interesting. <br>
+# Using this informations I will filter the values to look for Amount by Class <br>
+# I will filter the "normal" amounts by 3.000
+
+# In[ ]:
+
+
+#Feature engineering to a better visualization of the values
+df_credit['Amount_log'] = np.log(df_credit.Amount + 0.01)
+
+
+# In[ ]:
+
+
+plt.figure(figsize=(14,6))
+#I will explore the Amount by Class and see the distribuition of Amount transactions
+plt.subplot(121)
+ax = sns.boxplot(x ="Class",y="Amount",
+                 data=df_credit)
+ax.set_title("Class x Amount", fontsize=20)
+ax.set_xlabel("Is Fraud?", fontsize=16)
+ax.set_ylabel("Amount(US)", fontsize = 16)
+
+plt.subplot(122)
+ax1 = sns.boxplot(x ="Class",y="Amount_log", data=df_credit)
+ax1.set_title("Class x Amount", fontsize=20)
+ax1.set_xlabel("Is Fraud?", fontsize=16)
+ax1.set_ylabel("Amount(Log)", fontsize = 16)
+
+plt.subplots_adjust(hspace = 0.6, top = 0.8)
+
+plt.show()
+
+
+# We can see a slightly difference in log amount of our two Classes. <br>
+# The IQR of fraudulent transactions are higher than normal transactions, but normal transactions have highest values
+
+# ### Looking a scatter plot of the Time_min distribuition by Amount
+
+# In[ ]:
+
+
+#Looking the Amount and time distribuition of FRAUD transactions
+ax = sns.lmplot(y="Amount", x="Time_min", fit_reg=False,aspect=1.8,
+                data=df_credit, hue='Class')
+plt.title("Amounts by Minutes of Frauds and Normal Transactions",fontsize=16)
+plt.show()
+
+
+# ### Looking a scatter plot of the Time_hour distribuition by Amount
+
+# In[ ]:
+
+
+ax = sns.lmplot(y="Amount", x="Time_hour", fit_reg=False,aspect=1.8,
+                data=df_credit, hue='Class')
+plt.title("Amounts by Hour of Frauds and Normal Transactions", fontsize=16)
+
+plt.show()
+
+
+# <h2>I will use boxplot to search differents distribuitions: </h2>
+# - We are searching for features that diverges from normal distribuition
+
+# In[ ]:
+
+
+#Looking the V's features
+columns = df_credit.iloc[:,1:29].columns
+
+frauds = df_credit.Class == 1
+normals = df_credit.Class == 0
+
+grid = gridspec.GridSpec(14, 2)
+plt.figure(figsize=(15,20*4))
+
+for n, col in enumerate(df_credit[columns]):
+    ax = plt.subplot(grid[n])
+    sns.distplot(df_credit[col][frauds], bins = 50, color='g') #Will receive the "semi-salmon" violin
+    sns.distplot(df_credit[col][normals], bins = 50, color='r') #Will receive the "ocean" color
+    ax.set_ylabel('Density')
+    ax.set_title(str(col))
+    ax.set_xlabel('')
+plt.show()
+
+# We can see a interesting different distribuition in some of our features like V4, V9, V16, V17 and a lot more.  <br>
+# Now let's take a look on time distribuition
+
+#   ## Diference in time
+
+
+
+
+```
+
+
+```{python}
+
+
+# ## Feature selections
+
+# In[ ]:
+
+
+#I will select the variables where fraud class have a interesting behavior and might can help us predict
+
+df_credit = df_credit[["Time_hour","Time_min","V2","V3","V4","V9","V10","V11","V12","V14","V16","V17","V18","V19","V27","Amount","Class"]]
+
+
+# ## Some Feature Engineering
+
+# In[ ]:
+
+
+df_credit.Amount = np.log(df_credit.Amount + 0.001)
+
+
+# In[ ]:
+
+
+#Looking the final df
+df_credit.head()
+
+
+# In[ ]:
+
+
+colormap = plt.cm.Greens
+
+plt.figure(figsize=(14,12))
+
+sns.heatmap(df_credit.corr(),linewidths=0.1,vmax=1.0, 
+            square=True, cmap = colormap, linecolor='white', annot=True)
+plt.show()
+
+```
+
+
+
+```{python}
+# ## Preprocessing
+
+# In[ ]:
+
+
+from imblearn.pipeline import make_pipeline as make_pipeline_imb # To do our transformation in a unique time
+from imblearn.over_sampling import SMOTE
+from sklearn.pipeline import make_pipeline
+from imblearn.metrics import classification_report_imbalanced
+
+from sklearn.model_selection import train_test_split
+from collections import Counter
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+
+from sklearn.metrics import precision_score, recall_score, fbeta_score, confusion_matrix, precision_recall_curve, accuracy_score
+
+
+# In[ ]:
+
+
+X = df_credit.drop(["Class"], axis=1).values #Setting the X to do the split
+y = df_credit["Class"].values # transforming the values in array
+
+
+# In[ ]:
+
+
+# the function that we will use to better evaluate the model
+def print_results(headline, true_value, pred):
+    print(headline)
+    print("accuracy: {}".format(accuracy_score(true_value, pred)))
+    print("precision: {}".format(precision_score(true_value, pred)))
+    print("recall: {}".format(recall_score(true_value, pred)))
+    print("f2: {}".format(fbeta_score(true_value, pred, beta=2)))
+
+# splitting data into training and test set
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=2, test_size=0.20)
+
+classifier = RandomForestClassifier
+
+# build model with SMOTE imblearn
+smote_pipeline = make_pipeline_imb(SMOTE(random_state=4), classifier(random_state=42))
+
+smote_model = smote_pipeline.fit(X_train, y_train)
+smote_prediction = smote_model.predict(X_test)
+
+#Showing the diference before and after the transformation used
+print("normal data distribution: {}".format(Counter(y)))
+X_smote, y_smote = SMOTE().fit_sample(X, y)
+print("SMOTE data distribution: {}".format(Counter(y_smote)))
+
+
+# ## Evaluating the model SMOTE + Random Forest
+
+# In[ ]:
+
+
+print("Confusion Matrix: ")
+print(confusion_matrix(y_test, smote_prediction))
+
+print('\nSMOTE Pipeline Score {}'.format(smote_pipeline.score(X_test, y_test)))
+
+print_results("\nSMOTE + RandomForest classification", y_test, smote_prediction)
+
+
+# In[ ]:
+
+
+# Compute predicted probabilities: y_pred_prob
+y_pred_prob = smote_pipeline.predict_proba(X_test)[:,1]
+
+# Generate precision recall curve values: precision, recall, thresholds
+precision, recall, thresholds = precision_recall_curve(y_test, y_pred_prob)
+
+# Plot ROC curve
+plt.plot(precision, recall)
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision Recall Curve')
+plt.show()
+
+
+```
+
+
+```{python}
+
+# # This ROC Curve is a overfitted curve, how can I fix this problem and get a correct 
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import KFold, cross_val_score, GridSearchCV
+
+
+# In[ ]:
+
+
+#params of the model
+param_grid = {"max_depth": [3,5, None],
+              "n_estimators":[3,5,10],
+              "max_features": [5,6,7,8]}
+
+# Creating the classifier
+model = RandomForestClassifier(max_features=3, max_depth=2 ,n_estimators=10, random_state=3, criterion='entropy', n_jobs=1, verbose=1 )
+
+
+# In[ ]:
+
+
+grid_search = GridSearchCV(model, param_grid=param_grid, cv=5, scoring='recall')
+grid_search.fit(X_train, y_train)
+
+
+# In[ ]:
+
+
+print(grid_search.best_score_)
+print(grid_search.best_params_)
+
+
+# In[ ]:
+
+
+# Running the fit
+rf = RandomForestClassifier(max_depth=5, max_features = 7, n_estimators = 10)
+rf.fit(X_train, y_train)
+
+
+# In[ ]:
+
+
+# Printing the Training Score
+print("Training score data: ")
+print(rf.score(X_train, y_train))
+
+
+# In[ ]:
+
+
+#Testing the model 
+#Predicting by X_test
+y_pred = rf.predict(X_test)
+
+print(confusion_matrix(y_test, y_pred))
+print_results("RF classification", y_test, y_pred)
+
+```
+
+
+```{python}
+
+# ## Feature importance plot
+
+# In[ ]:
+
+
+features = ["Time_min", 'Time_hours',"V2","V3","V4","V9","V10","V11","V12","V14","V16","V17","V18","V19","V27","Amount"]
+
+plt.figure(figsize = (9,5))
+
+feat_import = pd.DataFrame({'Feature': features, 'Feature importance': rf.feature_importances_})
+feat_import = feat_import.sort_values(by='Feature importance',ascending=False)
+
+g = sns.barplot(x='Feature',y='Feature importance',data=feat_import)
+g.set_xticklabels(g.get_xticklabels(),rotation=90)
+g.set_title('Features importance - Random Forest',fontsize=20)
+plt.show() 
+
+
+# The top 4 feature are V17, V14, V12, V10 corresponds to 75% of total. 
+# 
+# Also the f2 score that is the median of recall and precision are on a considerably value
+
+# ## ROC CURVE - Random Forest
+
+# In[ ]:
+
+
+#Predicting proba
+y_pred_prob = rf.predict_proba(X_test)[:,1]
+
+# Generate precision recall curve values: precision, recall, thresholds
+precision, recall, thresholds = precision_recall_curve(y_test, y_pred_prob)
+
+# Plot ROC curve
+plt.plot(precision, recall)
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision Recall Curve')
+plt.show()
+
+
+# In[ ]:
+
+
+results = cross_val_score(rf,X_train, y_train, cv=10, scoring='recall')
+results
+
+
+# ## Modelling Logistic Regression with Hyper Parameters
+
+# In[ ]:
+
+
+param_grid = {'C': [0.01, 0.1, 1, 10],
+             'penalty':['l1', 'l2']}
+
+logreg = LogisticRegression(random_state=2)
+
+grid_search_lr = GridSearchCV(logreg, param_grid=param_grid, scoring='recall', cv=5)
+
+grid_search_lr.fit(X_train, y_train)
+
+
+# In[ ]:
+
+
+# The best recall obtained
+print(grid_search_lr.best_score_)
+#Best parameter on trainning set
+print(grid_search_lr.best_params_)
+
+
+# ### Setting the best parameters as parameters of our model
+
+# In[ ]:
+
+
+# Creating the model 
+logreg = LogisticRegression(C=10, penalty='l2',random_state=2)
+
+#Fiting the model
+logreg.fit(X_train, y_train)
+           
+# Printing the Training Score
+print("Cross Validation of X and y Train: ")
+print(cross_val_score(logreg,X_train, y_train, cv=5, scoring='recall'))
+
+
+# In[ ]:
+
+
+# Predicting with the best params
+y_pred = logreg.predict(X_test)
+
+print(confusion_matrix(y_test, y_pred))
+print("")
+print_results("LogReg classification", y_test, y_pred)
+
+
+# 70% of accuracy is not too bad, but we found a high vale on the Random Forest Model
+
+# ## Precision Recall Curve of Logistic Regression
+
+# In[ ]:
+
+
+#Predicting proba
+y_pred_prob = logreg.predict_proba(X_test)[:,1]
+
+# Generate precision recall curve values: precision, recall, thresholds
+precision, recall, thresholds = precision_recall_curve(y_test, y_pred_prob)
+
+# Plot ROC curve
+plt.plot(precision, recall)
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision Recall Curve')
+plt.show()
+
+
+# # CONCLUSION: 
+# The highest values of Normal transactions are 25691.16 while of Fraudulent transactions are just 2125.87. <br>
+# The average value of normal transactions are small(USD 88.29) than fraudulent transactions that is USD 122.21
+# 
+# 
+# We got the best score when we use the SMOTE (OverSampling)  + RandomForest, that performed a f2 score of 0.8669~ 
+# 
+# This is a considerably difference by the second best model that is 0.8252 that uses just RandomForests with some Hyper Parameters.
+# 
+# The worst model was Logreg where I used GridSearchCV to get the Best params to fit and predict where the recall was ~0.6666 and f2 ~0.70.
+# 
+# 
+# 
+
+# ## Please if you have any feedback or suggestion to improve my models, let me know! 
+
+# 
 
 ```
 
