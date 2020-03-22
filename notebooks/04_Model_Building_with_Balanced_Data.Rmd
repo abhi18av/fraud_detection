@@ -77,6 +77,17 @@ def print_ln():
 ```
 
 
+
+```{python}
+# In[ ]:
+
+df = pd.read_csv('./data/raw/creditcard.csv')
+df.head()
+
+```
+
+
+
 # ## Model building with balancing Classes
 # 
 # ##### Perform class balancing with :
@@ -84,6 +95,352 @@ def print_ln():
 # - SMOTE
 # - ADASYN
 
+
+
+```{python}
+from sklearn.preprocessing import StandardScaler
+
+df['normAmount'] = StandardScaler().fit_transform(df['Amount'].reshape(-1, 1))
+df = df.drop(['Time', 'Amount'], axis=1)
+df.head()
+
+
+```
+
+
+
+```{python}
+X = np.array(df.ix[:, df.columns != 'Class'])
+y = np.array(df.ix[:, df.columns == 'Class'])
+print('Shape of X: {}'.format(X.shape))
+print('Shape of y: {}'.format(y.shape))
+
+```
+
+
+
+```{python}
+from imblearn.over_sampling import SMOTE
+
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
+
+print("Number transactions X_train dataset: ", X_train.shape)
+print("Number transactions y_train dataset: ", y_train.shape)
+print("Number transactions X_test dataset: ", X_test.shape)
+print("Number transactions y_test dataset: ", y_test.shape)
+
+
+```
+
+
+```{python}
+
+print("Before OverSampling, counts of label '1': {}".format(sum(y_train==1)))
+print("Before OverSampling, counts of label '0': {} \n".format(sum(y_train==0)))
+
+sm = SMOTE(random_state=2)
+X_train_res, y_train_res = sm.fit_sample(X_train, y_train.ravel())
+
+print('After OverSampling, the shape of train_X: {}'.format(X_train_res.shape))
+print('After OverSampling, the shape of train_y: {} \n'.format(y_train_res.shape))
+
+print("After OverSampling, counts of label '1': {}".format(sum(y_train_res==1)))
+print("After OverSampling, counts of label '0': {}".format(sum(y_train_res==0)))
+
+```
+
+## SMOTE and credit card fraud
+# https://www.kaggle.com/kabure/credit-card-fraud-prediction-rf-smote
+
+```{python}
+
+
+from imblearn.pipeline import make_pipeline as make_pipeline_imb # To do our transformation in a unique time
+from imblearn.over_sampling import SMOTE
+from sklearn.pipeline import make_pipeline
+from imblearn.metrics import classification_report_imbalanced
+
+from sklearn.model_selection import train_test_split
+from collections import Counter
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+
+from sklearn.metrics import precision_score, recall_score, fbeta_score, confusion_matrix, precision_recall_curve, accuracy_score
+
+
+
+```
+
+```{python}
+X = df.drop(["Class"], axis=1).values #Setting the X to do the split
+y = df["Class"].values # transforming the values in array
+
+
+```
+
+```{python}
+# the function that we will use to better evaluate the model
+def print_results(headline, true_value, pred):
+    print(headline)
+    print("accuracy: {}".format(accuracy_score(true_value, pred)))
+    print("precision: {}".format(precision_score(true_value, pred)))
+    print("recall: {}".format(recall_score(true_value, pred)))
+    print("f2: {}".format(fbeta_score(true_value, pred, beta=2)))
+
+# splitting data into training and test set
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=2, test_size=0.20)
+
+classifier = RandomForestClassifier
+
+# build model with SMOTE imblearn
+smote_pipeline = make_pipeline_imb(SMOTE(random_state=4), \
+                                   classifier(random_state=42))
+
+smote_model = smote_pipeline.fit(X_train, y_train)
+smote_prediction = smote_model.predict(X_test)
+
+#Showing the diference before and after the transformation used
+print("normal data distribution: {}".format(Counter(y)))
+X_smote, y_smote = SMOTE().fit_sample(X, y)
+print("SMOTE data distribution: {}".format(Counter(y_smote)))
+
+```
+
+```{python}
+print("Confusion Matrix: ")
+print(confusion_matrix(y_test, smote_prediction))
+
+print('\nSMOTE Pipeline Score {}'.format(smote_pipeline.score(X_test, y_test)))
+
+print_results("\nSMOTE + RandomForest classification", y_test, smote_prediction)
+
+```
+
+```{python}
+
+
+# Compute predicted probabilities: y_pred_prob
+y_pred_prob = smote_pipeline.predict_proba(X_test)[:,1]
+
+# Generate precision recall curve values: precision, recall, thresholds
+precision, recall, thresholds = precision_recall_curve(y_test, y_pred_prob)
+
+# Plot ROC curve
+plt.plot(precision, recall)
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision Recall Curve')
+plt.show()
+
+
+
+```
+
+```{python}
+
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.cross_validation import KFold, cross_val_score
+from sklearn.grid_search import GridSearchCV
+
+
+
+```
+
+```{python}
+#params of the model
+param_grid = {"max_depth": [3,5, None],
+              "n_estimators":[3,5,10],
+              "max_features": [5,6,7,8]}
+
+# Creating the classifier
+model = RandomForestClassifier(max_features=3, max_depth=2 ,n_estimators=10, random_state=3, criterion='entropy', n_jobs=1, verbose=1 )
+
+```
+
+```{python}
+grid_search = GridSearchCV(model, param_grid=param_grid, cv=5, scoring='recall')
+grid_search.fit(X_train, y_train)
+
+
+```
+
+```{python}
+print(grid_search.best_score_)
+print(grid_search.best_params_)
+
+```
+
+```{python}
+
+
+# Running the fit
+rf = RandomForestClassifier(max_depth=5, max_features = 7, n_estimators = 10)
+rf.fit(X_train, y_train)
+
+
+
+```
+
+```{python}
+
+
+# Printing the Training Score
+print("Training score data: ")
+print(rf.score(X_train, y_train))
+
+
+
+```
+
+```{python}
+#Testing the model 
+#Predicting by X_test
+y_pred = rf.predict(X_test)
+
+print(confusion_matrix(y_test, y_pred))
+print_results("RF classification", y_test, y_pred)
+
+```
+
+
+```{python}
+features = ["Time_min", 'Time_hours',"V2","V3","V4","V9","V10","V11","V12","V14","V16","V17","V18","V19","V27","Amount"]
+
+# Credits to Gabriel Preda
+# https://www.kaggle.com/gpreda/credit-card-fraud-detection-predictive-models
+plt.figure(figsize = (9,5))
+
+feat_import = pd.DataFrame({'Feature': features, 'Feature importance': rf.feature_importances_})
+feat_import = feat_import.sort_values(by='Feature importance',ascending=False)
+
+g = sns.barplot(x='Feature',y='Feature importance',data=feat_import)
+g.set_xticklabels(g.get_xticklabels(),rotation=90)
+g.set_title('Features importance - Random Forest',fontsize=20)
+plt.show() 
+
+
+```
+
+```{python}
+#Predicting proba
+y_pred_prob = rf.predict_proba(X_test)[:,1]
+
+# Generate precision recall curve values: precision, recall, thresholds
+precision, recall, thresholds = precision_recall_curve(y_test, y_pred_prob)
+
+# Plot ROC curve
+plt.plot(precision, recall)
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision Recall Curve')
+plt.show()
+
+
+```
+
+```{python}
+results = cross_val_score(rf,X_train, y_train, cv=10, scoring='recall')
+results
+
+
+```
+
+```{python}
+param_grid = {'C': [0.01, 0.1, 1, 10],
+             'penalty':['l1', 'l2']}
+
+logreg = LogisticRegression(random_state=2)
+
+grid_search_lr = GridSearchCV(logreg, param_grid=param_grid, scoring='recall', cv=5)
+
+grid_search_lr.fit(X_train, y_train)
+
+
+```
+
+```{python}
+# The best recall obtained
+print(grid_search_lr.best_score_)
+#Best parameter on trainning set
+print(grid_search_lr.best_params_)
+
+```
+
+```{python}
+
+
+# Creating the model 
+logreg = LogisticRegression(C=10, penalty='l2',random_state=2)
+
+#Fiting the model
+logreg.fit(X_train, y_train)
+           
+# Printing the Training Score
+print("Cross Validation of X and y Train: ")
+print(cross_val_score(logreg,X_train, y_train, cv=5, scoring='recall'))
+
+
+
+```
+
+```{python}
+# Predicting with the best params
+y_pred = logreg.predict(X_test)
+
+print(confusion_matrix(y_test, y_pred))
+print("")
+print_results("LogReg classification", y_test, y_pred)
+
+
+```
+
+```{python}
+#Predicting proba
+y_pred_prob = logreg.predict_proba(X_test)[:,1]
+
+# Generate precision recall curve values: precision, recall, thresholds
+precision, recall, thresholds = precision_recall_curve(y_test, y_pred_prob)
+
+# Plot ROC curve
+plt.plot(precision, recall)
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision Recall Curve')
+plt.show()
+
+```
+
+```{python}
+results = cross_val_score(rf,X_train, y_train, cv=10, scoring='recall')
+results
+
+
+```
+
+
+```{python}
+
+```
+
+```{python}
+
+```
+
+```{python}
+
+```
+
+```{python}
+
+```
+
+```{python}
+
+```
 
 
 ```{python}

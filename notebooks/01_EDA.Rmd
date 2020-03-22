@@ -256,6 +256,8 @@ plt.show()
 
 f, (ax1, ax2) = plt.subplots(2, 1, figsize=(24,20))
 
+colormap = plt.cm.Greens
+
 # Entire DataFrame
 corr = df.corr()
 sns.heatmap(corr, cmap='coolwarm_r', annot_kws={'size':20}, ax=ax1)
@@ -330,10 +332,6 @@ plt.show()
 # Create a scatter plot to observe the distribution of classes with Amount
 
 
-# In[ ]:
-
-
-# Drop unnecessary columns
 
 
 ```
