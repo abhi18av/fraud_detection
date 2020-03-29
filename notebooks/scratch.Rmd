@@ -492,11 +492,10 @@ print(grid_search.best_params_)
 
 ```{python}
 
-# l1 lasso l2 ridge
 param_grid= {"C":np.logspace(-3,3,7), 
              "penalty":["l2"]}
 
-model_lr_3= LogisticRegression(max_iter=200)
+model_lr_3= LogisticRegression()
 
 logreg_cv= GridSearchCV(model_lr_3, param_grid, cv=10)
 logreg_cv.fit(X_train, y_train)
@@ -558,66 +557,6 @@ results
 ```
 
 
-```{python}
-# Modelling Logistic Regression with Hyper Parameters
-
-param_grid = {'C': [0.01, 0.1, 1, 10],
-             'penalty':['l1', 'l2']}
-
-model_lr_1 = LogisticRegression(random_state=2)
-
-grid_search_lr = GridSearchCV(model_lr_1, param_grid=param_grid, scoring='recall', cv=5)
-
-grid_search_lr.fit(X_train, y_train)
-
-# The best recall obtained
-print(grid_search_lr.best_score_)
-#Best parameter on trainning set
-print(grid_search_lr.best_params_)
-
-
-# Setting the best parameters as parameters of our model
-
-# Creating the model 
-model_lr_2 = LogisticRegression(C=10, penalty='l2',random_state=2)
-
-#Fiting the model
-model_lr_2.fit(X_train, y_train)
-           
-# Printing the Training Score
-print("Cross Validation of X and y Train: ")
-print(cross_val_score(model_lr_2,X_train, y_train, cv=5, scoring='recall'))
-
-
-# Predicting with the best params
-y_pred = model_lr_2.predict(X_test)
-
-print(confusion_matrix(y_test, y_pred))
-
-print_results("model_lr_2 classification", y_test, y_pred)
-
-
-# 70% of accuracy is not too bad, but we found a high vale on the Random Forest Model
-
-# Precision Recall Curve of Logistic Regression
-
-
-# Predicting proba
-y_pred_prob = model_lr_2.predict_proba(X_test)[:,1]
-
-# Generate precision recall curve values: precision, recall, thresholds
-precision, recall, thresholds = precision_recall_curve(y_test, y_pred_prob)
-
-# Plot ROC curve
-plt.plot(precision, recall)
-plt.xlabel('Recall')
-plt.ylabel('Precision')
-plt.title('Precision Recall Curve')
-plt.show()
-
- 
-
-```
 
 
 # CONCLUSION: 
