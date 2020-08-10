@@ -21,64 +21,79 @@ os.chdir("/Users/eklavya/projects/education/formalEducation/DataScience/DataScie
 
 # Credit Card Fraud Detection
 
+ 
+The datasets contains transactions made by credit cards in September 2013 by european cardholders. This dataset presents transactions that occurred in two days, where we have 492 frauds out of 284,807 transactions. The dataset is highly unbalanced, the positive class (frauds) account for 0.172% of all transactions.
+ 
+It contains only numerical input variables which are the result of a PCA transformation. Unfortunately, due to confidentiality issues, we cannot provide the original features and more background information about the data. Features V1, V2, ... V28 are the principal components obtained with PCA, the only features which have not been transformed with PCA are 'Time' and 'Amount'. Feature 'Time' contains the seconds elapsed between each transaction and the first transaction in the dataset. The feature 'Amount' is the transaction Amount, this feature can be used for example-dependant cost-senstive learning. Feature 'Class' is the response variable and it takes value 1 in case of fraud and 0 otherwise.
+ 
+Given the class imbalance ratio, we recommend measuring the accuracy using the Area Under the Precision-Recall Curve (AUPRC). Confusion matrix accuracy is not meaningful for unbalanced classification.
+ 
+
+
+
 ```{python}
-# <h2>Introduction to Dataset</h2>
-# 
-# The datasets contains transactions made by credit cards in September 2013 by european cardholders. This dataset presents transactions that occurred in two days, where we have 492 frauds out of 284,807 transactions. The dataset is highly unbalanced, the positive class (frauds) account for 0.172% of all transactions.
-# 
-# It contains only numerical input variables which are the result of a PCA transformation. Unfortunately, due to confidentiality issues, we cannot provide the original features and more background information about the data. Features V1, V2, ... V28 are the principal components obtained with PCA, the only features which have not been transformed with PCA are 'Time' and 'Amount'. Feature 'Time' contains the seconds elapsed between each transaction and the first transaction in the dataset. The feature 'Amount' is the transaction Amount, this feature can be used for example-dependant cost-senstive learning. Feature 'Class' is the response variable and it takes value 1 in case of fraud and 0 otherwise.
-# 
-# Given the class imbalance ratio, we recommend measuring the accuracy using the Area Under the Precision-Recall Curve (AUPRC). Confusion matrix accuracy is not meaningful for unbalanced classification.
-# 
-# 
+ 
 
-# <h2>Let's start importing the librarys and looking the data</h2>
+# import the libraries
 
-# In[ ]:
+import pandas as pd 
+import numpy as np 
+import seaborn as sns 
+import matplotlib.pyplot as plt # 
+import matplotlib.gridspec as gridspec 
 
+from imblearn.pipeline import make_pipeline as make_pipeline_imb 
+from imblearn.over_sampling import SMOTE
+from sklearn.pipeline import make_pipeline
+from imblearn.metrics import classification_report_imbalanced
 
-import pandas as pd #To hand with data 
-import numpy as np #To math 
-import seaborn as sns #to visualization
-import matplotlib.pyplot as plt # to plot the graphs
-import matplotlib.gridspec as gridspec # to do the grid of plots
+from sklearn.model_selection import train_test_split, KFold, cross_val_score, GridSearchCV
+from collections import Counter
 
-
-# In[ ]:
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 
 
-#loading the data
+
+from sklearn.metrics import precision_score, recall_score, fbeta_score, confusion_matrix, precision_recall_curve, accuracy_score
+
+
+
+def print_ln():
+    print('-' * 80, '\n')
+
+
+# the function that we will use to better evaluate the model
+def print_results(headline, true_value, pred):
+    print(headline)
+    print("accuracy: {}".format(accuracy_score(true_value, pred)))
+    print("precision: {}".format(precision_score(true_value, pred)))
+    print("recall: {}".format(recall_score(true_value, pred)))
+    print("f2: {}".format(fbeta_score(true_value, pred, beta=2)))
+
+
+
+# loading the data
 df_credit = pd.read_csv('./data/raw/creditcard.csv')
 
 
-# In[ ]:
-
-
-#looking the how data looks
+# looking the how data looks
 df_credit.head()
 
 
-# In[ ]:
-
-
-#looking the type and searching for null values
+# looking the type and searching for null values
 df_credit.info()
 
 
-# In[ ]:
-
-
-# The data is stardarized, I will explore them later
-#For now I will look the "normal" columns
-df_credit[["Time","Amount","Class"]].describe()
-
-
-# <h2>Firstly, I will explore through 3 different columns:</h2>
+# Firstly, I will explore through 3 different columns:
 # - Time
 # - Amount
 # - Class
 
-# In[ ]:
+
+# explore the "normal" columns
+df_credit[["Time","Amount","Class"]].describe()
+
 
 ```
 
@@ -88,6 +103,7 @@ df_credit[["Time","Amount","Class"]].describe()
 print("Distribuition of Normal(0) and Frauds(1): ")
 print(df_credit["Class"].value_counts())
 
+# We have a clearly imbalanced data.
 plt.figure(figsize=(7,5))
 sns.countplot(df_credit['Class'])
 plt.title("Class Count", fontsize=18)
@@ -95,17 +111,18 @@ plt.xlabel("Is fraud?", fontsize=15)
 plt.ylabel("Count", fontsize=15)
 plt.show()
 
+```
 
-# We have a clearly imbalanced data.<br>
-# It's very common when treating of frauds... <br>
-# 
-# <b>First</b> I will do some explore through the Time and Amount. <br>
-# <b>Second</b> I will explore the V's Features, that are PCA's 
 
-# ## Time Features and some Feature Engineering
+
+```{python}
+
+# Firstly, do some explore through the Time and Amount. 
+# Secondly, explore the V Features, that are already transformed via PCA
+
+# Feature Engineering
+
 # As our Time feature are in seconds we will transform it ot minutes and hours to get a better understand of the patterns
-
-# In[ ]:
 
 
 timedelta = pd.to_timedelta(df_credit['Time'], unit='s')
@@ -113,42 +130,31 @@ df_credit['Time_min'] = (timedelta.dt.components.minutes).astype(int)
 df_credit['Time_hour'] = (timedelta.dt.components.hours).astype(int)
 
 
-# In[ ]:
-
-
-#Exploring the distribuition by Class types throught hours and minutes
+# exploring the distribuition by Class types through hours and minutes
 plt.figure(figsize=(12,5))
-sns.distplot(df_credit[df_credit['Class'] == 0]["Time_hour"], 
-             color='g')
-sns.distplot(df_credit[df_credit['Class'] == 1]["Time_hour"], 
-             color='r')
+sns.distplot(df_credit[df_credit['Class'] == 0]["Time_hour"],  color='g')
+sns.distplot(df_credit[df_credit['Class'] == 1]["Time_hour"],  color='r')
 plt.title('Fraud x Normal Transactions by Hours', fontsize=17)
 plt.xlim([-1,25])
 plt.show()
 
 
-# In[ ]:
 
-
-#Exploring the distribuition by Class types throught hours and minutes
+# exploring the distribuition by Class types throught hours and minutes
 plt.figure(figsize=(12,5))
-sns.distplot(df_credit[df_credit['Class'] == 0]["Time_min"], 
-             color='g')
-sns.distplot(df_credit[df_credit['Class'] == 1]["Time_min"], 
-             color='r')
+sns.distplot(df_credit[df_credit['Class'] == 0]["Time_min"],  color='g')
+sns.distplot(df_credit[df_credit['Class'] == 1]["Time_min"],  color='r')
 plt.title('Fraud x Normal Transactions by minutes', fontsize=17)
 plt.xlim([-1,61])
 plt.show()
 
-
-# - Interesting distribuition, but don't sounds like a clear pattern of action
-
-# ## Looking the statistics of our Amount class frauds and normal transactions
-
-# In[ ]:
+```
 
 
-#To clearly the data of frauds and no frauds
+```{python}
+
+# looking the statistics of our Amount class frauds and normal transactions
+
 df_fraud = df_credit[df_credit['Class'] == 1]
 df_normal = df_credit[df_credit['Class'] == 0]
 
@@ -162,18 +168,13 @@ print(df_normal["Amount"].describe())
 
 
 ```{python}
-# Interesting. <br>
 # Using this informations I will filter the values to look for Amount by Class <br>
 # I will filter the "normal" amounts by 3.000
-
-# In[ ]:
 
 
 #Feature engineering to a better visualization of the values
 df_credit['Amount_log'] = np.log(df_credit.Amount + 0.01)
 
-
-# In[ ]:
 
 
 plt.figure(figsize=(14,6))
@@ -195,14 +196,14 @@ plt.subplots_adjust(hspace = 0.6, top = 0.8)
 
 plt.show()
 
+```
 
+
+```{python}
 # We can see a slightly difference in log amount of our two Classes. <br>
 # The IQR of fraudulent transactions are higher than normal transactions, but normal transactions have highest values
 
-# ### Looking a scatter plot of the Time_min distribuition by Amount
-
-# In[ ]:
-
+# Looking a scatter plot of the Time_min distribuition by Amount
 
 #Looking the Amount and time distribuition of FRAUD transactions
 ax = sns.lmplot(y="Amount", x="Time_min", fit_reg=False,aspect=1.8,
@@ -210,10 +211,12 @@ ax = sns.lmplot(y="Amount", x="Time_min", fit_reg=False,aspect=1.8,
 plt.title("Amounts by Minutes of Frauds and Normal Transactions",fontsize=16)
 plt.show()
 
+```
 
-# ### Looking a scatter plot of the Time_hour distribuition by Amount
 
-# In[ ]:
+
+```{python}
+# Looking a scatter plot of the Time_hour distribuition by Amount
 
 
 ax = sns.lmplot(y="Amount", x="Time_hour", fit_reg=False,aspect=1.8,
@@ -222,11 +225,12 @@ plt.title("Amounts by Hour of Frauds and Normal Transactions", fontsize=16)
 
 plt.show()
 
+```
 
-# <h2>I will use boxplot to search differents distribuitions: </h2>
-# - We are searching for features that diverges from normal distribuition
+```{python}
 
-# In[ ]:
+# I will use boxplot to search differents distribuitions: 
+# We are searching for features that diverges from normal distribution
 
 
 #Looking the V's features
@@ -250,9 +254,7 @@ plt.show()
 # We can see a interesting different distribuition in some of our features like V4, V9, V16, V17 and a lot more.  <br>
 # Now let's take a look on time distribuition
 
-#   ## Diference in time
-
-
+# Diference in time
 
 
 ```
@@ -263,31 +265,23 @@ plt.show()
 
 # ## Feature selections
 
-# In[ ]:
-
-
-#I will select the variables where fraud class have a interesting behavior and might can help us predict
+# I will select the variables where fraud class have a interesting behavior and might can help us predict
 
 df_credit = df_credit[["Time_hour","Time_min","V2","V3","V4","V9","V10","V11","V12","V14","V16","V17","V18","V19","V27","Amount","Class"]]
 
 
-# ## Some Feature Engineering
-
-# In[ ]:
+# Feature Engineering
 
 
 df_credit.Amount = np.log(df_credit.Amount + 0.001)
 
-
-# In[ ]:
-
-
 #Looking the final df
 df_credit.head()
+```
 
 
-# In[ ]:
 
+```{python}
 
 colormap = plt.cm.Greens
 
@@ -299,73 +293,40 @@ plt.show()
 
 ```
 
-
-
 ```{python}
-# ## Preprocessing
 
-# In[ ]:
-
-
-from imblearn.pipeline import make_pipeline as make_pipeline_imb # To do our transformation in a unique time
-from imblearn.over_sampling import SMOTE
-from sklearn.pipeline import make_pipeline
-from imblearn.metrics import classification_report_imbalanced
-
-from sklearn.model_selection import train_test_split
-from collections import Counter
-
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
-
-from sklearn.metrics import precision_score, recall_score, fbeta_score, confusion_matrix, precision_recall_curve, accuracy_score
-
-
-# In[ ]:
+## Preprocessing
 
 
 X = df_credit.drop(["Class"], axis=1).values #Setting the X to do the split
 y = df_credit["Class"].values # transforming the values in array
 
 
-# In[ ]:
-
-
-
-
-# the function that we will use to better evaluate the model
-def print_results(headline, true_value, pred):
-    print(headline)
-    print("accuracy: {}".format(accuracy_score(true_value, pred)))
-    print("precision: {}".format(precision_score(true_value, pred)))
-    print("recall: {}".format(recall_score(true_value, pred)))
-    print("f2: {}".format(fbeta_score(true_value, pred, beta=2)))
-
 # splitting data into training and test set
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=2, test_size=0.20)
 
+```
 
-model_rf1= RandomForestClassifier(n_estimators= 100,                                   
-                                  random_state = 100,
-                                  max_depth=5, 
-                                  min_samples_leaf=50,
-                                  min_samples_split=50)
+```{python}
 
-#Train the model using the training sets y_pred=clf.predict(X_test)
-model_rf1.fit(X_train, y_train)
 
-y_pred= model_rf1.predict(X_test)
+model_rf_1= RandomForestClassifier(n_estimators= 100, random_state = 100)
+
+# Train the model using the training sets y_pred=clf.predict(X_test)
+model_rf_1.fit(X_train, y_train)
+
+y_pred= model_rf_1.predict(X_test)
 
 
 print("Confusion Matrix: ")
 print(confusion_matrix(y_test, y_pred))
 
-print('\nPipeline Score {}'.format(model_rf1.score(X_test, y_test)))
+print('\nPipeline Score {}'.format(model_rf_1.score(X_test, y_test)))
 
-print_results("\nRandomForest classification", y_test, y_pred)
+print_results("\nmodel_rf_1 classification", y_test, y_pred)
 
 # Compute predicted probabilities: y_pred_prob
-y_pred_prob = model_rf1.predict_proba(X_test)[:,1]
+y_pred_prob = model_rf_1.predict_proba(X_test)[:,1]
 
 # Generate precision recall curve values: precision, recall, thresholds
 precision, recall, thresholds = precision_recall_curve(y_test, y_pred_prob)
@@ -378,18 +339,55 @@ plt.title('Precision Recall Curve')
 plt.show()
 
 
-
 ```
 
 
 ```{python}
 
+# Creating the model 
+model_lr_1 = LogisticRegression(C=10, penalty='l2', random_state=2)
+
+#Fiting the model
+model_lr_1.fit(X_train, y_train)
+           
+# Printing the Training Score
+print("Cross Validation of X and y Train: ")
+print(cross_val_score(model_lr_1,X_train, y_train, cv=5, scoring='recall'))
 
 
-classifier = RandomForestClassifier
+print("Confusion Matrix: ")
+print(confusion_matrix(y_test, y_pred))
+
+print('\nPipeline Score {}'.format(model_lr_1.score(X_test, y_test)))
+
+print_results("\nmodel_lr_1 classification", y_test, y_pred)
+
+# Compute predicted probabilities: y_pred_prob
+y_pred_prob = model_lr_1.predict_proba(X_test)[:,1]
+
+# Generate precision recall curve values: precision, recall, thresholds
+precision, recall, thresholds = precision_recall_curve(y_test, y_pred_prob)
+
+# Plot ROC curve
+plt.plot(precision, recall)
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision Recall Curve')
+plt.show()
+
+ 
+
+```
+
+
+
+
+
+```{python}
 
 # build model with SMOTE imblearn
-smote_pipeline = make_pipeline_imb(SMOTE(random_state=4), classifier(random_state=42))
+model_rf_2 = RandomForestClassifier
+smote_pipeline = make_pipeline_imb(SMOTE(random_state=4), model_rf_2(random_state=42))
 
 smote_model = smote_pipeline.fit(X_train, y_train)
 smote_prediction = smote_model.predict(X_test)
@@ -402,8 +400,6 @@ print("SMOTE data distribution: {}".format(Counter(y_smote)))
 
 # ## Evaluating the model SMOTE + Random Forest
 
-# In[ ]:
-
 
 print("Confusion Matrix: ")
 print(confusion_matrix(y_test, smote_prediction))
@@ -411,10 +407,6 @@ print(confusion_matrix(y_test, smote_prediction))
 print('\nSMOTE Pipeline Score {}'.format(smote_pipeline.score(X_test, y_test)))
 
 print_results("\nSMOTE + RandomForest classification", y_test, smote_prediction)
-
-
-# In[ ]:
-
 
 # Compute predicted probabilities: y_pred_prob
 y_pred_prob = smote_pipeline.predict_proba(X_test)[:,1]
@@ -433,15 +425,51 @@ plt.show()
 ```
 
 
+
 ```{python}
 
-# # This ROC Curve is a overfitted curve, how can I fix this problem and get a correct 
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import KFold, cross_val_score, GridSearchCV
+# build model with SMOTE imblearn
+model_lr_2 = LogisticRegression
+ 
+smote_pipeline = make_pipeline_imb(SMOTE(random_state=4), model_lr_2(random_state=42))
+
+smote_model = smote_pipeline.fit(X_train, y_train)
+smote_prediction = smote_model.predict(X_test)
+
+#Showing the diference before and after the transformation used
+print("normal data distribution: {}".format(Counter(y)))
+X_smote, y_smote = SMOTE().fit_sample(X, y)
+print("SMOTE data distribution: {}".format(Counter(y_smote)))
+
+# Evaluating the model SMOTE 
+
+print("Confusion Matrix: ")
+print(confusion_matrix(y_test, smote_prediction))
+
+print('\nSMOTE Pipeline Score {}'.format(smote_pipeline.score(X_test, y_test)))
+
+print_results("\nSMOTE + model_lr_2 classification", y_test, smote_prediction)
+
+# Compute predicted probabilities: y_pred_prob
+y_pred_prob = smote_pipeline.predict_proba(X_test)[:,1]
+
+# Generate precision recall curve values: precision, recall, thresholds
+precision, recall, thresholds = precision_recall_curve(y_test, y_pred_prob)
+
+# Plot ROC curve
+plt.plot(precision, recall)
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision Recall Curve')
+plt.show()
 
 
-# In[ ]:
+```
 
+
+
+
+```{python}
 
 #params of the model
 param_grid = {"max_depth": [3,5, None],
@@ -449,64 +477,51 @@ param_grid = {"max_depth": [3,5, None],
               "max_features": [5,6,7,8]}
 
 # Creating the classifier
-model = RandomForestClassifier(max_features=3, max_depth=2 ,n_estimators=10, random_state=3, criterion='entropy', n_jobs=1, verbose=1 )
+model_rf_3 = RandomForestClassifier(max_features=3, max_depth=2 ,n_estimators=10, random_state=3, criterion='entropy', n_jobs=1, verbose=1 )
 
 
-# In[ ]:
-
-
-grid_search = GridSearchCV(model, param_grid=param_grid, cv=5, scoring='recall')
+grid_search = GridSearchCV(model_rf_3, param_grid=param_grid, cv=5, scoring='recall')
 grid_search.fit(X_train, y_train)
-
-
-# In[ ]:
 
 
 print(grid_search.best_score_)
 print(grid_search.best_params_)
-
-
-# In[ ]:
-
-
-# Running the fit
-rf = RandomForestClassifier(max_depth=5, max_features = 7, n_estimators = 10)
-rf.fit(X_train, y_train)
-
-
-# In[ ]:
-
-
-# Printing the Training Score
-print("Training score data: ")
-print(rf.score(X_train, y_train))
-
-
-# In[ ]:
-
-
-#Testing the model 
-#Predicting by X_test
-y_pred = rf.predict(X_test)
-
-print(confusion_matrix(y_test, y_pred))
-print_results("RF classification", y_test, y_pred)
-
 ```
+
+
+
+```{python}
+
+param_grid= {"C":np.logspace(-3,3,7), 
+             "penalty":["l2"]}
+
+model_lr_3= LogisticRegression()
+
+logreg_cv= GridSearchCV(model_lr_3, param_grid, cv=10)
+logreg_cv.fit(X_train, y_train)
+
+print("tuned hpyerparameters :(best parameters) ",logreg_cv.best_params_)
+print("accuracy :",logreg_cv.best_score_)
+
+grid_search = GridSearchCV(model_lr_3, param_grid=param_grid, cv=5, scoring='recall')
+grid_search.fit(X_train, y_train)
+
+print(grid_search.best_score_)
+print(grid_search.best_params_)
+```
+
+
 
 
 ```{python}
 
 # ## Feature importance plot
 
-# In[ ]:
-
-
 features = ["Time_min", 'Time_hours',"V2","V3","V4","V9","V10","V11","V12","V14","V16","V17","V18","V19","V27","Amount"]
 
 plt.figure(figsize = (9,5))
 
-feat_import = pd.DataFrame({'Feature': features, 'Feature importance': rf.feature_importances_})
+feat_import = pd.DataFrame({'Feature': features, 'Feature importance': model_rf_4.feature_importances_})
 feat_import = feat_import.sort_values(by='Feature importance',ascending=False)
 
 g = sns.barplot(x='Feature',y='Feature importance',data=feat_import)
@@ -516,16 +531,13 @@ plt.show()
 
 
 # The top 4 feature are V17, V14, V12, V10 corresponds to 75% of total. 
-# 
+ 
 # Also the f2 score that is the median of recall and precision are on a considerably value
 
-# ## ROC CURVE - Random Forest
+# ROC CURVE - Random Forest
 
-# In[ ]:
-
-
-#Predicting proba
-y_pred_prob = rf.predict_proba(X_test)[:,1]
+# Predicting proba
+y_pred_prob = model_rf_4.predict_proba(X_test)[:,1]
 
 # Generate precision recall curve values: precision, recall, thresholds
 precision, recall, thresholds = precision_recall_curve(y_test, y_pred_prob)
@@ -538,106 +550,28 @@ plt.title('Precision Recall Curve')
 plt.show()
 
 
-# In[ ]:
-
-
-results = cross_val_score(rf,X_train, y_train, cv=10, scoring='recall')
+results = cross_val_score(model_rf_4,X_train, y_train, cv=10, scoring='recall')
 results
 
 
 ```
 
 
-```{python}
-# ## Modelling Logistic Regression with Hyper Parameters
-
-# In[ ]:
 
 
-param_grid = {'C': [0.01, 0.1, 1, 10],
-             'penalty':['l1', 'l2']}
-
-logreg = LogisticRegression(random_state=2)
-
-grid_search_lr = GridSearchCV(logreg, param_grid=param_grid, scoring='recall', cv=5)
-
-grid_search_lr.fit(X_train, y_train)
-
-
-# In[ ]:
+# CONCLUSION: 
+The highest values of Normal transactions are 25691.16 while of Fraudulent transactions are just 2125.87. <br>
+The average value of normal transactions are small(USD 88.29) than fraudulent transactions that is USD 122.21
+ 
+We got the best score when we use the SMOTE (OverSampling)  + RandomForest, that performed a f2 score of 0.8669~ 
+This is a considerably difference by the second best model that is 0.8252 that uses just RandomForests with some Hyper Parameters.
+The worst model was model_lr_1 where I used GridSearchCV to get the Best params to fit and predict where the recall was ~0.6666 and f2 ~0.70.
+ 
 
 
-# The best recall obtained
-print(grid_search_lr.best_score_)
-#Best parameter on trainning set
-print(grid_search_lr.best_params_)
+# TODO only do k-fold analysis only for the final model test-train split 
+# TODO https://medium.com/datadriveninvestor/k-fold-cross-validation-6b8518070833
 
 
-# ### Setting the best parameters as parameters of our model
 
-# In[ ]:
-
-
-# Creating the model 
-logreg = LogisticRegression(C=10, penalty='l2',random_state=2)
-
-#Fiting the model
-logreg.fit(X_train, y_train)
-           
-# Printing the Training Score
-print("Cross Validation of X and y Train: ")
-print(cross_val_score(logreg,X_train, y_train, cv=5, scoring='recall'))
-
-
-# In[ ]:
-
-
-# Predicting with the best params
-y_pred = logreg.predict(X_test)
-
-print(confusion_matrix(y_test, y_pred))
-print("")
-print_results("LogReg classification", y_test, y_pred)
-
-
-# 70% of accuracy is not too bad, but we found a high vale on the Random Forest Model
-
-# ## Precision Recall Curve of Logistic Regression
-
-# In[ ]:
-
-
-#Predicting proba
-y_pred_prob = logreg.predict_proba(X_test)[:,1]
-
-# Generate precision recall curve values: precision, recall, thresholds
-precision, recall, thresholds = precision_recall_curve(y_test, y_pred_prob)
-
-# Plot ROC curve
-plt.plot(precision, recall)
-plt.xlabel('Recall')
-plt.ylabel('Precision')
-plt.title('Precision Recall Curve')
-plt.show()
-
-
-# # CONCLUSION: 
-# The highest values of Normal transactions are 25691.16 while of Fraudulent transactions are just 2125.87. <br>
-# The average value of normal transactions are small(USD 88.29) than fraudulent transactions that is USD 122.21
-# 
-# 
-# We got the best score when we use the SMOTE (OverSampling)  + RandomForest, that performed a f2 score of 0.8669~ 
-# 
-# This is a considerably difference by the second best model that is 0.8252 that uses just RandomForests with some Hyper Parameters.
-# 
-# The worst model was Logreg where I used GridSearchCV to get the Best params to fit and predict where the recall was ~0.6666 and f2 ~0.70.
-# 
-# 
-# 
-
-# ## Please if you have any feedback or suggestion to improve my models, let me know! 
-
-# 
-
-```
 
